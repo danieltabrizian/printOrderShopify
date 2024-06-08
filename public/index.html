@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>QR Scanner Demo</title>
+  </head>
+  <body>
+    <h1>Scan from WebCam:</h1>
+    <div id="video-container">
+      <video id="qr-video"></video>
+    </div>
+    <div>
+      <b>Detected QR code: </b>
+      <span id="cam-qr-result">None</span>
+      <br />
+      <button id="start-button">Start</button>
+      <button id="stop-button">Stop</button>
+    </div>
+    <hr />
+    Copy code
+    <h2>Scanned Order Numbers:</h2>
+    <ul id="order-list"></ul>
+
+    <h2>Add Order Number Manually:</h2>
+    <input
+      type="text"
+      id="manual-order-input"
+      placeholder="Enter order number"
+    />
+    <button id="add-manual-order">Add Order</button>
+
+    <br /><br />
+    <button id="mark-shipped-button">Mark All Orders as Shipped</button>
+
+    <script type="module">
+      import QrScanner from "../qr-scanner.min.js";
+
+      const video = document.getElementById("qr-video");
+      const camQrResult = document.getElementById("cam-qr-result");
+      const camQrResultTimestamp = document.getElementById(
+        "cam-qr-result-timestamp"
+      );
+      const orderList = document.getElementById("order-list");
+      const manualOrderInput = document.getElementById("manual-order-input");
+      const addManualOrderButton = document.getElementById("add-manual-order");
+      const markShippedButton = document.getElementById("mark-shipped-button");
+
+      const scanner = new QrScanner(
+        video,
+        (result) => {
+          console.log("QR code detected:", result);
+          setResult(camQrResult, result);
+          addOrderToList(result.data);
+        },
+        {
+          onDecodeError: (error) => {
+            camQrResult.textContent = error;
+            camQrResult.style.color = "inherit";
+          },
+          highlightScanRegion: true,
+          highlightCodeOutline: true,
+        }
+      );
+
+      function setResult(label, result) {
+        label.textContent = result.data;
+        label.style.color = "teal";
+        clearTimeout(label.highlightTimeout);
+        label.highlightTimeout = setTimeout(
+          () => (label.style.color = "inherit"),
+          100
+        );
+      }
+
+      function addOrderToList(orderNumber) {
+        console.log("Adding order to list:", orderNumber);
+        const existingOrders = Array.from(orderList.children).map(
+          (item) => item.textContent
+        );
+        if (!existingOrders.includes(orderNumber)) {
+          const listItem = document.createElement("li");
+          listItem.textContent = orderNumber;
+          orderList.appendChild(listItem);
+        }
+      }
+
+      addManualOrderButton.addEventListener("click", () => {
+        const orderNumber = manualOrderInput.value.trim();
+        if (orderNumber) {
+          addOrderToList(orderNumber);
+          manualOrderInput.value = "";
+        }
+      });
+
+      markShippedButton.addEventListener("click", () => {
+        const orderNumbers = Array.from(orderList.children).map(
+          (item) => item.textContent
+        );
+        const orderNumbersParam = orderNumbers.join(",");
+
+        fetch(`/mark_shipped?orderNumbers=${orderNumbersParam}`)
+          .then((response) => response.json())
+          .then((data) => {
+            alert(data.message);
+            orderList.innerHTML = ""; // Clear the order list after marking as shipped
+          })
+          .catch((error) => {
+            console.error("Error marking orders as shipped:", error);
+            alert("Failed to mark orders as shipped. Please try again.");
+          });
+      });
+
+      scanner.start().then(() => {
+        QrScanner.hasCamera().then((hasCamera) =>
+          console.log("Has camera:", hasCamera)
+        );
+      });
+
+      document.getElementById("start-button").addEventListener("click", () => {
+        scanner.start();
+      });
+
+      document.getElementById("stop-button").addEventListener("click", () => {
+        scanner.stop();
+      });
+    </script>
+  </body>
+</html>
