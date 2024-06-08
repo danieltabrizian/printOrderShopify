@@ -106,10 +106,9 @@ app.post("/shopify_webhook", async (req, res) => {
       "$country",
       shippingAddress.country
     );
-
+    modifiedLabelXml = modifiedLabelXml.replaceAll("$orderid", orderData.id);
     modifiedLabelXml = modifiedLabelXml.replaceAll("$order", orderNumber);
     modifiedLabelXml = modifiedLabelXml.replaceAll("$PDR", orderPickingString);
-    modifiedLabelXml = modifiedLabelXml.replaceAll("$orderid", orderData.id);
 
     // Create a new instance of the Dymo class
     const dymo = new Dymo();
