@@ -10,7 +10,7 @@ const path = require("path");
 // Create a DOMParser instance using jsdom
 const { window } = new JSDOM();
 const DOMParser = window.DOMParser;
-
+require("dotenv").config();
 const apiKey = process.env.API_KEY;
 const secret = process.env.SECRET;
 const shopUrl = process.env.SHOP_URL;
@@ -188,45 +188,33 @@ function getFixedXml(label) {
 }
 
 async function markOrderAsCompleted(orderId) {
-  try {
-    const client = new shopify.clients.Rest({ session: session });
-    const response = await client.get({
-      path: "orders",
-    });
+  const client = new shopify.clients.Rest({ session: session });
 
-    const order = response.body.orders.find(
-      (order) => order.order_number == orderId
-    );
+  const fulfillment_order = await client.get({
+    path: "orders/" + orderId + "/fulfillment_orders.json",
+  });
 
-    const fulfillment_order = await client.get({
-      path: "orders/" + order.id + "/fulfillment_orders.json",
-    });
+  // Prepare the fulfillment data
+  const fulfillmentData = {
+    fulfillment: {
+      line_items_by_fulfillment_order: [
+        {
+          fulfillment_order_id: fulfillment_order.body.fulfillment_orders[0].id,
+        },
+      ],
+      notify_customer: true,
+      api_version: ApiVersion.April24,
+    },
+  };
+  // Create the fulfillment to mark the order as completed
+  const fulfillmentResponse = await client.post({
+    path: `fulfillments.json`,
+    data: fulfillmentData,
+    type: "application/json",
+  });
 
-    // Prepare the fulfillment data
-    const fulfillmentData = {
-      fulfillment: {
-        line_items_by_fulfillment_order: [
-          {
-            fulfillment_order_id:
-              fulfillment_order.body.fulfillment_orders[0].id,
-          },
-        ],
-        notify_customer: true,
-        api_version: ApiVersion.April24,
-      },
-    };
-    // Create the fulfillment to mark the order as completed
-    const fulfillmentResponse = await client.post({
-      path: `fulfillments.json`,
-      data: fulfillmentData,
-      type: "application/json",
-    });
-
-    console.log(
-      "Order marked as completed:",
-      fulfillmentResponse.body.fulfillment.name
-    );
-  } catch (error) {
-    console.error("Error marking order as completed:", error);
-  }
+  console.log(
+    "Order marked as completed:",
+    fulfillmentResponse.body.fulfillment.name
+  );
 }

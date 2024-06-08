@@ -13,6 +13,7 @@
     "@shopify/shopify-api": "^11.0.0",
     "body-parser": "^1.20.2",
     "domparser": "^0.1.1",
+    "dotenv": "^16.4.5",
     "dymojs": "^1.2.0",
     "express": "^4.19.2",
     "jsdom": "^24.1.0"

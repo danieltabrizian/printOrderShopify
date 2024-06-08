@@ -94,7 +94,7 @@
 
       markShippedButton.addEventListener("click", () => {
         const orderNumbers = Array.from(orderList.children).map(
-          (item) => item.textContent
+          (item) => item.textContent.split("/")[1]
         );
         const orderNumbersParam = orderNumbers.join(",");
 

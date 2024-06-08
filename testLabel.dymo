@@ -541,7 +541,7 @@
           <Size>Medium</Size>
           <EQRCodeType>QRCodeText</EQRCodeType>
           <TextDataHolder>
-            <Value>$orderid</Value>
+            <Value>$order/$orderid</Value>
           </TextDataHolder>
           <ObjectLayout>
             <DYMOPoint>
