@@ -89,21 +89,27 @@ app.post("/shopify_webhook", async (req, res) => {
 
     // Replace the placeholders in the label XML with actual data
     let modifiedLabelXml = labelXml;
-    modifiedLabelXml = modifiedLabelXml.replace("$name", shippingAddress.name);
-    modifiedLabelXml = modifiedLabelXml.replace(
+    modifiedLabelXml = modifiedLabelXml.replaceAll(
+      "$name",
+      shippingAddress.name
+    );
+    modifiedLabelXml = modifiedLabelXml.replaceAll(
       "$address",
       shippingAddress.address1
     );
-    modifiedLabelXml = modifiedLabelXml.replace("$zip", shippingAddress.zip);
-    modifiedLabelXml = modifiedLabelXml.replace("$city", shippingAddress.city);
-    modifiedLabelXml = modifiedLabelXml.replace(
+    modifiedLabelXml = modifiedLabelXml.replaceAll("$zip", shippingAddress.zip);
+    modifiedLabelXml = modifiedLabelXml.replaceAll(
+      "$city",
+      shippingAddress.city
+    );
+    modifiedLabelXml = modifiedLabelXml.replaceAll(
       "$country",
       shippingAddress.country
     );
 
-    modifiedLabelXml = modifiedLabelXml.replace("$order", orderNumber);
-    modifiedLabelXml = modifiedLabelXml.replace("$PDR", orderPickingString);
-    modifiedLabelXml = modifiedLabelXml.replace("$orderid", orderData.id);
+    modifiedLabelXml = modifiedLabelXml.replaceAll("$order", orderNumber);
+    modifiedLabelXml = modifiedLabelXml.replaceAll("$PDR", orderPickingString);
+    modifiedLabelXml = modifiedLabelXml.replaceAll("$orderid", orderData.id);
 
     // Create a new instance of the Dymo class
     const dymo = new Dymo();
